@@ -13,7 +13,9 @@ from .serializers import (
     UserSerializer,
     CreateUserSerializer,
     PasswordResetSerializer,
+    AddSkillSerializer,
     RequestPasswordResetSerializer,
+    RemoveSkillSerializer,
 )
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -45,6 +47,10 @@ pp = pprint.PrettyPrinter(indent=4)
             OpenApiParameter(name="user_id", description="Category Id", type=str),
         ],
     ),
+    add_skill=extend_schema(
+        summary="request reset password",
+        description="blah blah blah",
+    ),
 )
 class UserViewSet(
     mixins.ListModelMixin,
@@ -64,7 +70,18 @@ class UserViewSet(
             return RequestPasswordResetSerializer
         elif self.action in ["reset_password"]:
             return PasswordResetSerializer
+        elif self.action in ["add_skill"]:
+            return AddSkillSerializer
+        elif self.action in ["remove_skill"]:
+            return RemoveSkillSerializer
         return UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -116,3 +133,41 @@ class UserViewSet(
             data={"message": f"Your password rest link: {reset_url}"},
             status=status.HTTP_200_OK,
         )
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        name="add-skill",
+        url_path="add-skill",
+        url_name="add-skill",
+    )
+    def add_skill(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data,
+            context={
+                "user_id": str(self.kwargs.get("pk")),
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        name="remove-skill",
+        url_path="remove-skill",
+        url_name="remove-skill",
+    )
+    def remove_skill(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data,
+            context={
+                "user_id": str(self.kwargs.get("pk")),
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data={"message": "Skill removed"}, status=status.HTTP_200_OK)
