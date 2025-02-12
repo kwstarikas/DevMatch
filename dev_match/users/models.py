@@ -19,11 +19,10 @@ class ProgrammingLanguage(Enum):
 
 
 def programming_language_dict():
-    return {"programming_languages": []}
+    return {"skills": []}
 
 
 class Developer(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     age = models.IntegerField(
         validators=[MaxValueValidator(100), MinValueValidator(14)]
