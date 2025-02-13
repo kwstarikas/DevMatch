@@ -7,6 +7,7 @@ from rest_framework.viewsets import GenericViewSet
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 
+from ..models import Project, Skill
 from ..serializers.user_serializers import (
     UserSerializer,
     AddSkillSerializer,
@@ -45,6 +46,10 @@ from ..serializers.project_serializers import CreateProjectSerializer, ProjectSe
         ],
     ),
     add_skill=extend_schema(
+        summary="request reset password",
+        description="blah blah blah",
+    ),
+    statistics=extend_schema(
         summary="request reset password",
         description="blah blah blah",
     ),
@@ -185,3 +190,22 @@ class UserViewSet(
         serializer.save()
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        name="statistics",
+        url_path="statistics",
+        url_name="statistics",
+    )
+    def statistics(self, request, *args, **kwargs):
+        users = User.objects.all()
+        data = {}
+        for user in users:
+            data[user.id] = {
+                "owned projects": user.developer.get_projects_owned(),
+                "projects Contributed": user.developer.get_projects_contributed(),
+            }
+        data["most used language"] = Skill.get_most_used_language()
+        data["most used level"] = Skill.get_most_used_level()
+        return Response(data=data, status=status.HTTP_200_OK)

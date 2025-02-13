@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -22,6 +24,22 @@ class Skill(models.Model):
 
     level = models.CharField(max_length=2, choices=Level.choices)
     language = models.CharField(max_length=5, choices=ProgrammingLanguage.choices)
+
+    @staticmethod
+    def get_most_used_language():
+        languages = Skill.objects.values_list("language", flat=True)
+        if not languages:
+            return None
+        most_common_language, count = Counter(languages).most_common(1)[0]
+        return {"language": most_common_language, "count": count}
+
+    @staticmethod
+    def get_most_used_level():
+        levels = Skill.objects.values_list("level", flat=True)
+        if not levels:
+            return None
+        most_common_level, count = Counter(levels).most_common(1)[0]
+        return {"level": most_common_level, "count": count}
 
     def __str__(self):
         return f"Programming Language {self.language} with level {self.level}"
@@ -87,3 +105,9 @@ class Developer(models.Model):
                 name="old_enough",
             ),
         ]
+
+    def get_projects_owned(self):
+        return Project.objects.filter(owner=self.user).count()
+
+    def get_projects_contributed(self):
+        return Project.objects.filter(collaborators=self.user).count()
