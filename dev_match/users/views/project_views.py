@@ -33,6 +33,17 @@ from ..models import Project
         summary="Retrieve all projects",
         description="blah blah blah",
     ),
+    destroy=extend_schema(
+        summary="Retrieve all projects",
+        description="blah blah blah",
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                description="user_id of the project's owner",
+                type=int,
+            ),
+        ],
+    ),
     apply_to_project=extend_schema(
         summary="Create a Project",
         description="blah blah blah",
@@ -66,12 +77,25 @@ from ..models import Project
             ),
         ],
     ),
+    set_project_complete=extend_schema(
+        summary="set project status to complete",
+        description="blah blah blah",
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                description="user_id of the project's owner",
+                type=int,
+            ),
+        ],
+        request=ApplyToProjectSerializer,
+    ),
 )
 class ProjectViewSet(
     mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    http_method_names = ["post", "get", "patch"]
+    http_method_names = ["post", "get", "patch", "delete"]
     # queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
@@ -88,6 +112,45 @@ class ProjectViewSet(
         elif self.action in ["decline_contributor"]:
             return DeclineContriburtor
         return ProjectSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        user_id = self.request.query_params.get("user_id")
+        project = self.get_object()
+        if not User.objects.filter(id=user_id).exists():
+            return Response(
+                data={"User does not exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if str(project.owner.id) != str(user_id):
+            return Response(
+                data={"User trying to delete project where its not owner"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        name="set-project-complete",
+        url_path="set-project-complete",
+        url_name="set-project-complete",
+    )
+    def set_project_complete(self, request, *args, **kwargs):
+        user_id = self.request.query_params.get("user_id")
+        project = self.get_object()
+        if not User.objects.filter(id=user_id).exists():
+            return Response(
+                data={"User does not exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if str(project.owner.id) != str(user_id):
+            return Response(
+                data={"User trying to delete project where its not owner"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        project.status = "CP"
+        project.save()
+        return Response(data={"Project's status changed"}, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
