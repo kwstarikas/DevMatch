@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Developer, Skill
+from .models import Developer, Skill, Project
 
 
 class DeveloperInline(admin.StackedInline):
@@ -20,7 +20,22 @@ class SkillAdmin(admin.ModelAdmin):
     fields = ["level", "language"]
 
 
+class ProjectAdmin(admin.ModelAdmin):
+    model = Project
+    fields = [
+        "owner",
+        "project_name",
+        "description",
+        "maximum_collaborators",
+        "collaborators",
+        "status",
+        "open_positions",
+        "apllied_collaborators",
+    ]
+
+
 admin.site.register(Skill, SkillAdmin)
+admin.site.register(Project, ProjectAdmin)
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
