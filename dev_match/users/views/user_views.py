@@ -9,7 +9,8 @@ from rest_framework.viewsets import GenericViewSet
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 
-from .serializers import (
+from ..models import Project
+from ..serializers.user_serializers import (
     UserSerializer,
     CreateUserSerializer,
     PasswordResetSerializer,
@@ -17,6 +18,7 @@ from .serializers import (
     RequestPasswordResetSerializer,
     RemoveSkillSerializer,
 )
+from ..serializers.project_serializers import CreateProjectSerializer, ProjectSerializer
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -61,7 +63,7 @@ class UserViewSet(
 ):
     http_method_names = ["post", "get", "patch"]
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    # serializer_class = UserSerializer
 
     def get_serializer_class(self):
         if self.action in ["create", "update"]:
@@ -74,6 +76,11 @@ class UserViewSet(
             return AddSkillSerializer
         elif self.action in ["remove_skill"]:
             return RemoveSkillSerializer
+        elif self.action in ["create_project"]:
+            return CreateProjectSerializer
+        elif self.action in ["get_available_projects"]:
+            return ProjectSerializer
+
         return UserSerializer
 
     def create(self, request, *args, **kwargs):
@@ -142,12 +149,9 @@ class UserViewSet(
         url_name="add-skill",
     )
     def add_skill(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data,
-            context={
-                "user_id": str(self.kwargs.get("pk")),
-            },
-        )
+        user_instance = self.get_object()
+
+        serializer = self.get_serializer(data=request.data, instance=user_instance)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -161,13 +165,28 @@ class UserViewSet(
         url_name="remove-skill",
     )
     def remove_skill(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data,
-            context={
-                "user_id": str(self.kwargs.get("pk")),
-            },
-        )
+        user_instance = self.get_object()
+
+        serializer = self.get_serializer(data=request.data, instance=user_instance)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(data={"message": "Skill removed"}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        name="create-project",
+        url_path="create-project",
+        url_name="create-project",
+    )
+    def create_project(self, request, *args, **kwargs):
+        user_instance = self.get_object()
+
+        serializer = self.get_serializer(
+            data=request.data, context={"user": user_instance}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
