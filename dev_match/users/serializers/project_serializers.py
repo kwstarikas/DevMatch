@@ -1,14 +1,9 @@
-import pprint
-
 from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
-from ..models import Developer, Skill, Project
-from .user_serializers import UserSerializer, SkillSerializer
-
-pp = pprint.PrettyPrinter(indent=4)
+from ..models import Developer, Project
+from .user_serializers import SkillSerializer
 
 
 class CollaboratorsSerializer(serializers.ModelSerializer):

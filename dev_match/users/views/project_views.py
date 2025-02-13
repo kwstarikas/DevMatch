@@ -1,30 +1,19 @@
-import pprint
-
 from rest_framework import status
 from rest_framework import mixins
 from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 
-from ..serializers.user_serializers import (
-    UserSerializer,
-    CreateUserSerializer,
-    PasswordResetSerializer,
-    AddSkillSerializer,
-    RequestPasswordResetSerializer,
-    RemoveSkillSerializer,
-)
+
+from ..models import Project
 from ..serializers.project_serializers import (
-    CreateProjectSerializer,
     ProjectSerializer,
     ApplyToProjectSerializer,
     AcceptContriburtor,
     DeclineContriburtor,
 )
-from ..models import Project
 
 
 @extend_schema(tags=["Projects"])
@@ -96,7 +85,6 @@ class ProjectViewSet(
     GenericViewSet,
 ):
     http_method_names = ["post", "get", "patch", "delete"]
-    # queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
     def get_queryset(self):

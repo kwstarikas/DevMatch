@@ -1,13 +1,9 @@
-import pprint
-
 from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 from ..models import Developer, Skill
-
-pp = pprint.PrettyPrinter(indent=4)
 
 
 class SkillSerializer(serializers.ModelSerializer):

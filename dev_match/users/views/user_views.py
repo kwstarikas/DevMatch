@@ -1,5 +1,3 @@
-import pprint
-
 from rest_framework import status
 from rest_framework import mixins
 from django.contrib.auth.models import User
@@ -9,18 +7,15 @@ from rest_framework.viewsets import GenericViewSet
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 
-from ..models import Project
 from ..serializers.user_serializers import (
     UserSerializer,
-    CreateUserSerializer,
-    PasswordResetSerializer,
     AddSkillSerializer,
-    RequestPasswordResetSerializer,
+    CreateUserSerializer,
     RemoveSkillSerializer,
+    PasswordResetSerializer,
+    RequestPasswordResetSerializer,
 )
 from ..serializers.project_serializers import CreateProjectSerializer, ProjectSerializer
-
-pp = pprint.PrettyPrinter(indent=4)
 
 
 @extend_schema(tags=["Users"])
